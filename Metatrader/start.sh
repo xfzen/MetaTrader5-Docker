@@ -121,9 +121,10 @@ if ! is_python_package_installed "pyxdg"; then
     pip install --break-system-packages --no-cache-dir pyxdg
 fi
 
-# Start the MT5 server on Linux
+# Start the MT5 server in the Wine Python environment. Newer mt5linux
+# releases no longer support the legacy `-w <python.exe>` Linux-side bridge.
 show_message "[7/7] Starting the mt5linux server..."
-python3 -m mt5linux --host 0.0.0.0 -p $mt5server_port -w $wine_executable python.exe &
+$wine_executable python -m mt5linux --host 0.0.0.0 -p $mt5server_port &
 
 # Give the server some time to start
 sleep 5
