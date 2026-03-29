@@ -105,10 +105,14 @@ fi
 # Upgrade pip and install required packages
 show_message "[6/7] Installing Python libraries"
 $wine_executable python -m pip install --upgrade --no-cache-dir pip
+# MetaTrader5 currently ships binaries built against NumPy 1.x. Keep a 1.x
+# runtime in Wine or imports will fail with `_ARRAY_API` / multiarray errors.
+show_message "[6/7] Installing compatible NumPy in Windows"
+$wine_executable python -m pip install --no-cache-dir --force-reinstall "numpy<2"
 # Install MetaTrader5 library in Windows if not installed
 show_message "[6/7] Installing MetaTrader5 library in Windows"
 if ! is_wine_python_package_installed "MetaTrader5==$metatrader_version"; then
-    $wine_executable python -m pip install --no-cache-dir MetaTrader5==$metatrader_version
+    $wine_executable python -m pip install --no-cache-dir --no-deps MetaTrader5==$metatrader_version
 fi
 # Install mt5linux library in Windows if not installed
 show_message "[6/7] Checking and installing mt5linux library in Windows if necessary"

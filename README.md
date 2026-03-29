@@ -32,6 +32,11 @@ more reliable for MetaTrader 5 unattended installation than `winehq-stable`,
 and helps avoid installer failures such as `A debugger has been found running
 in your system`.
 
+MetaTrader5 Python bindings currently require a NumPy 1.x runtime in the Wine
+Python environment. If you are rebuilding from an older `/config` volume that
+already contains `numpy 2.x`, remove or recreate that volume so the container
+can provision a compatible `numpy<2`.
+
 ## Usage from repository
 
 1. Clone this repository:
