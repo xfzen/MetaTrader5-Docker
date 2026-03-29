@@ -41,6 +41,9 @@ is_wine_python_package_installed() {
 check_dependency "curl"
 check_dependency "$wine_executable"
 
+# Avoid Wine crash/debugger popups interrupting unattended installs.
+$wine_executable reg add "HKEY_CURRENT_USER\\Software\\Wine\\WineDbg" /v ShowCrashDialog /t REG_DWORD /d 0 /f >/dev/null 2>&1 || true
+
 # Install Mono if not present
 if [ ! -e "/config/.wine/drive_c/windows/mono" ]; then
     show_message "[1/7] Downloading and installing Mono..."
@@ -63,8 +66,19 @@ else
     show_message "[3/7] Downloading MT5 installer..."
     curl -o /config/.wine/drive_c/mt5setup.exe $mt5setup_url
     show_message "[3/7] Installing MetaTrader 5..."
-    $wine_executable "/config/.wine/drive_c/mt5setup.exe" "/auto" &
-    wait
+    WINEDLLOVERRIDES=mscoree=d $wine_executable "/config/.wine/drive_c/mt5setup.exe" "/auto" &
+    installer_pid=$!
+
+    # The installer process exits before terminal64.exe is fully written.
+    # Wait for the binary to appear so the first boot can launch MT5.
+    for _ in $(seq 1 120); do
+        if [ -e "$mt5file" ]; then
+            break
+        fi
+        sleep 2
+    done
+
+    wait $installer_pid || true
     rm -f /config/.wine/drive_c/mt5setup.exe
 fi
 
@@ -111,8 +125,8 @@ fi
 # Install mt5linux library in Linux if not installed
 show_message "[6/7] Checking and installing mt5linux library in Linux if necessary"
 if ! is_python_package_installed "mt5linux"; then
-    pip install --break-system-packages --no-cache-dir --no-deps mt5linux && \
-    pip install --break-system-packages --no-cache-dir rpyc plumbum numpy
+    pip install --break-system-packages --no-cache-dir --no-deps "mt5linux==1.0.3" && \
+    pip install --break-system-packages --no-cache-dir "rpyc==5.2.3" "plumbum==1.7.0" "pyparsing>=3.1,<4" numpy
 fi
 
 # Install pyxdg library in Linux if not installed
