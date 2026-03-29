@@ -25,6 +25,13 @@ If you just need to run Metatrader for running your MQL5 programs without any Py
 - Docker installed on your machine.
 - Only intelx86/amd64 host is supported
 
+## Wine compatibility
+
+This image uses `winehq-staging` on Debian Bookworm. In practice this is
+more reliable for MetaTrader 5 unattended installation than `winehq-stable`,
+and helps avoid installer failures such as `A debugger has been found running
+in your system`.
+
 ## Usage from repository
 
 1. Clone this repository:
